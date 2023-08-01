@@ -1,0 +1,789 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NetJson</name>
+    </assembly>
+    <members>
+        <member name="F:Cheng.Json.JsonFunction.NewLine">
+            <summary>
+            换行符
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonFunction.Tab">
+            <summary>
+            制表符
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonFunction.IgnoreList">
+            <summary>
+            忽略的Json文本字符
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonFunction.numberChar">
+            <summary>
+            可以转化为数字的json字符集合
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.CheckIgnore(System.Char)">
+            <summary>
+            检查字符是否为Json的忽略字符
+            </summary>
+            <param name="c"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.ChectChar(System.Char,System.Char[])">
+            <summary>
+            检查字符是否为数组里的字符
+            </summary>
+            <param name="c"></param>
+            <param name="cs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.CheckNotCharText(System.String,System.Int32,System.Int32@)">
+            <summary>
+            检查忽略文本
+            </summary>
+            <param name="text">要检查的有实例的文本</param>
+            <param name="beginIndex">起始索引</param>
+            <param name="endIndex">检查后的忽略文本后第一项索引</param>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.ChectType(System.Char,Cheng.Json.JsonValueType@)">
+            <summary>
+            判断首字符是否为某元素类型的第一个字符
+            </summary>
+            <param name="text">第一个字符</param>
+            <param name="type">类型</param>
+            <returns>是否是指定类型</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.CheckBoolean(System.String,System.Int32,System.Boolean@,System.Int32@)">
+            <summary>
+            检查可能布尔值的元素
+            </summary>
+            <param name="text">检查文本</param>
+            <param name="beginIndex">起始索引</param>
+            <param name="value">返回的值</param>
+            <param name="endIndex">该值向后一位的索引</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.CheckNull(System.String,System.Int32,System.Int32@)">
+            <summary>
+            检查可能是空值的元素
+            </summary>
+            <param name="text">文本</param>
+            <param name="beginIndex">起始索引</param>
+            <param name="endIndex">文本读取的后一位索引</param>
+            <returns>是否为空，true表示是空</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.CheckString(System.String,System.Int32,System.String@,System.Int32@)">
+            <summary>
+            检查字符串并返回
+            </summary>
+            <param name="beginIndex">检查起始索引</param>
+            <param name="text">检查参数，起始索引必为双引号</param>
+            <param name="value">提取参数</param>
+            <param name="endIndex">元素后的第一个字符索引</param>
+            <returns>是否正确</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.CheckNum(System.String,System.Int32,System.Decimal@,System.Int32@)">
+            <summary>
+            检查数字并返回
+            </summary>
+            <param name="text"></param>
+            <param name="beginIndex">起始索引</param>
+            <param name="num">获取的数</param>
+            <param name="endIndex">值结束的后一位索引</param>
+            <returns>是否正确</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.CheckList(System.String,System.Int32,Cheng.Json.JsonList@,System.Int32@)">
+            <summary>
+            向后检查集合并返回集合
+            </summary>
+            <param name="text">从此处向后有集合元素的文本</param>
+            <param name="beginIndex">text起始索引</param>
+            <param name="list">元素获取</param>
+            <param name="endIndex">元素文本向后一位的索引</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonFunction.CheckDict(System.String,System.Int32,Cheng.Json.JsonObject@,System.Int32@)">
+            <summary>
+            检查键值对并返回
+            </summary>
+            <param name="text">已确定首字符是键值对字符'{'</param>
+            <param name="beginIndex">text的索引</param>
+            <param name="node">获取键值对</param>
+            <param name="endIndex">该元素json文本后的第一个索引</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="T:Cheng.Json.JsonValueType">
+            <summary>
+            Json文件中的元素类型
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonValueType.Null">
+            <summary>
+            一个空对象
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonValueType.String">
+            <summary>
+            字符串类型元素
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonValueType.Number">
+            <summary>
+            数值类型元素
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonValueType.Boolean">
+            <summary>
+            布尔值类型元素
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonValueType.Object">
+            <summary>
+            表示键值对集合的对象元素
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonValueType.List">
+            <summary>
+            数组类型元素
+            </summary>
+        </member>
+        <member name="T:Cheng.Json.JsonValue">
+            <summary>
+            表示一个Json中的一个元素
+            <para>使用<see cref="M:Cheng.Json.JsonValue.JsonToObject(System.String)"/>将json转化为对象</para>
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonValue.m_level">
+            <summary>
+            元素层级，根节点为0
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.f_initJsonParameter">
+            <summary>
+            初始化参数
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonValue.m_jsonType">
+            <summary>
+            元素类型
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonValue.m_parantNode">
+            <summary>
+            包含此元素的向上最近键值对节点
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonValue.JsonType">
+            <summary>
+            获取当前Json元素类型
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonValue.GetValueString">
+            <summary>
+            提取元素到字符串
+            <para>仅当<see cref="P:Cheng.Json.JsonValue.JsonType"/>为<see cref="F:Cheng.Json.JsonValueType.String"/>时有效</para>
+            </summary>
+            <exception cref="T:System.NotImplementedException"><see cref="P:Cheng.Json.JsonValue.JsonType"/>不为<see cref="F:Cheng.Json.JsonValueType.String"/></exception>
+        </member>
+        <member name="P:Cheng.Json.JsonValue.GetValueNumber">
+            <summary>
+            提取元素到值类型
+            <para>仅当<see cref="P:Cheng.Json.JsonValue.JsonType"/>为<see cref="F:Cheng.Json.JsonValueType.Number"/>时有效</para>
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonValue.GetValueList">
+            <summary>
+            提取元素到集合
+            <para>仅当<see cref="P:Cheng.Json.JsonValue.JsonType"/>为<see cref="F:Cheng.Json.JsonValueType.List"/>时有效</para>
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonValue.GetValueNode">
+            <summary>
+            提取元素到键值对节点集合
+            <para>仅当<see cref="P:Cheng.Json.JsonValue.JsonType"/>为<see cref="F:Cheng.Json.JsonValueType.Object"/>时有效</para>
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonValue.GetValueBoolean">
+            <summary>
+            提取元素到布尔值
+            <para>仅当<see cref="P:Cheng.Json.JsonValue.JsonType"/>为<see cref="F:Cheng.Json.JsonValueType.Object"/>时有效</para>
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonValue.Null">
+            <summary>
+            当前元素是否为空元素
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonValue.GetValue">
+            <summary>
+            提取该元素的值
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.f_setLevel(System.Int32)">
+            <summary>
+            调整元素层级
+            </summary>
+            <param name="lvl">元素父层级</param>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.f_toJsonText">
+            <summary>
+            将此节点内容转化为json文本格式
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.TransObject``1">
+            <summary>
+            将此实例转化为特定的派生类型
+            </summary>
+            <typeparam name="T">转化的类型</typeparam>
+            <returns>该实例的派生类型实例，若实例不是类型<typeparamref name="T"/>则返回null</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.TransObject``1(``0@)">
+            <summary>
+            将此实例转化为特定的派生类型
+            </summary>
+            <typeparam name="T">转化的类型</typeparam>
+            <param name="obj">获取该实例的派生类型实例</param>
+            <returns>是否转化成功</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.ToString">
+            <summary>
+            返回此实例的Json格式字符串
+            </summary>
+            <returns>此实例的Json格式字符串</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.ToJsonText">
+            <summary>
+            使用Json格式文本返回此实例内容
+            </summary>
+            <returns>Json格式文本</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.JsonToObject(System.String)">
+            <summary>
+            将指定Json文本转化为json对象
+            </summary>
+            <param name="jsonText">Json格式的文本</param>
+            <returns>使用<paramref name="jsonText"/>转化的对象</returns>
+            <exception cref="T:System.ArgumentNullException">参数为null</exception>
+            <exception cref="T:Cheng.Json.JsonException">json文本格式错误，无法正常读取</exception>
+            <exception cref="T:System.StackOverflowException">文本嵌套次数过多导致在递归读取时堆栈溢出</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.JsonToObject(System.String,System.Int32,System.Int32@)">
+            <summary>
+            将指定Json文本转化为json对象
+            </summary>
+            <param name="jsonText">Json格式的文本</param>
+            <param name="beginIndex">指定读取<paramref name="jsonText"/>文本的起始索引</param>
+            <param name="endIndex">获取读取完毕后，json文本末尾后一位的索引</param>
+            <returns>转化后的对象</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.StreamToObject(System.IO.StreamReader)">
+            <summary>
+            将指定流文本转化为json对象
+            </summary>
+            <param name="streamReader">读取的流文本</param>
+            <returns>使用<paramref name="streamReader"/>读取文本转化的对象</returns>
+            <exception cref="T:System.ArgumentNullException">参数为null</exception>
+            <exception cref="T:Cheng.Json.JsonException">json文本格式错误，无法正常读取</exception>
+            <exception cref="T:System.IO.IOException">IO错误</exception>
+            <exception cref="T:System.OutOfMemoryException">没有足够的内存读取字符串文本</exception>
+            <exception cref="T:System.StackOverflowException">文本嵌套次数过多导致在递归读取时堆栈溢出</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonValue.StreamToObject(System.String)">
+            <summary>
+            指定路径文件中的json文本转化为对象
+            </summary>
+            <param name="path">读取的文件路径</param>
+            <returns>路径文件的json文本转化的对象</returns>
+            <exception cref="T:System.ArgumentNullException">参数为null</exception>
+            <exception cref="T:Cheng.Json.JsonException">json文本格式错误，无法正常读取</exception>
+            <exception cref="T:System.IO.IOException">IO错误</exception>
+            <exception cref="T:System.OutOfMemoryException">没有足够的内存读取字符串文本</exception>
+            <exception cref="T:System.IO.FileNotFoundException">无法找到文件</exception>
+            <exception cref="T:System.ArgumentException">路径不正确</exception>
+            <exception cref="T:System.NotSupportedException">path 包含一个冒号 (":")，它不是属于卷标识符 (例如，"c:\")</exception>
+            <exception cref="T:System.IO.PathTooLongException">指定的路径和/或文件名超过了系统定义的最大长度</exception>
+            <exception cref="T:System.StackOverflowException">文本嵌套次数过多导致在递归读取时堆栈溢出</exception>
+        </member>
+        <member name="T:Cheng.Json.JsonObject">
+            <summary>
+            表示Json中使用花括号"{}"囊括键值对的对象元素；同时也可以当作一个Json文本的根节点
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.#ctor">
+            <summary>
+            实例化一个键值对节点
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.#ctor(System.Boolean)">
+            <summary>
+            实例化一个键值对节点集合，并指定转化文本时是否换行
+            </summary>
+            <param name="toTextIsNoewLine">转化为文本时是否使用换行</param>
+        </member>
+        <member name="P:Cheng.Json.JsonObject.ToTextIsNewLine">
+            <summary>
+            转化为文本时是否使用换行和缩进；默认为false
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonObject.GetValueNode">
+            <summary>
+            提取元素到键值对节点集合
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonObject.Count">
+            <summary>
+            当前节点内的键值对数量
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Add(System.String,System.Decimal)">
+            <summary>
+            添加一对键值对，指定值为数据
+            </summary>
+            <param name="key">键</param>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentNullException">key为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Add(System.String,System.String)">
+            <summary>
+            添加一对键值对，指定值为字符串
+            </summary>
+            <param name="key">键</param>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentNullException">参数为null</exception>
+        </member>
+        <member name="P:Cheng.Json.JsonObject.Item(System.String)">
+            <summary>
+            获取或设置与指定键的值
+            </summary>
+            <param name="key">键</param>
+            <returns>指定键的值，若未找到则返回一个null</returns>
+            <exception cref="T:System.ArgumentNullException">键为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Get(System.String,Cheng.Json.JsonValue@)">
+            <summary>
+            获取指定值
+            </summary>
+            <param name="key">键</param>
+            <param name="value">获取的值</param>
+            <returns>是否找到键；若找到指定的键则返回true；若找不到则返回false，并将<paramref name="value"/>设为null</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.ContainsKey(System.String)">
+            <summary>
+            查询指定键是否存在于当前键值对中
+            </summary>
+            <param name="key">键</param>
+            <returns>存在返回true；不存在返回false</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Add(System.String,Cheng.Json.JsonValue)">
+            <summary>
+            添加一对键值到节点
+            </summary>
+            <param name="key">键</param>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentNullException">key为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Add``1(System.String,``0)">
+            <summary>
+            添加一对键值到节点
+            </summary>
+            <param name="key">键</param>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentNullException">参数为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Remove(System.String)">
+            <summary>
+            删除指定键的一对数据
+            </summary>
+            <param name="key"></param>
+            <returns>是否删除成功</returns>
+            <exception cref="T:System.ArgumentNullException">key为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Add(System.String,System.Boolean)">
+            <summary>
+            添加一个布尔值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Add(System.String)">
+            <summary>
+            添加一个空值
+            </summary>
+            <param name="key">键</param>
+            <exception cref="T:System.ArgumentNullException">key为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Set(System.String)">
+            <summary>
+            给指定的键设置一个空值
+            </summary>
+            <param name="key">key为null</param>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.Clear">
+            <summary>
+            移除当前键值对节点元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonObject.ToString">
+            <summary>
+            返回以Json格式的键值对集合文本
+            </summary>
+            <returns>Json文件文本</returns>
+        </member>
+        <member name="T:Cheng.Json.JsonList">
+            <summary>
+            表示Json中使用中括号"[]"的集合元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonList.#ctor">
+            <summary>
+            初始化Json数组元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonList.#ctor(System.Int32)">
+            <summary>
+            初始化Json数组元素，指定初始容量
+            </summary>
+            <param name="capactiy">集合初始容量</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">参数小于0</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.#ctor(System.Collections.Generic.IEnumerable{Cheng.Json.JsonValue})">
+            <summary>
+            使用集合初始化Json数组元素
+            </summary>
+            <param name="arr">集合</param>
+            <exception cref="T:System.ArgumentNullException">参数为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Set(System.Int32,System.String)">
+            <summary>
+            设置索引为新值
+            </summary>
+            <param name="index">索引</param>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentNullException">值为null</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">索引超出范围</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Set(System.Int32,System.Decimal)">
+            <summary>
+            设置索引为新值
+            </summary>
+            <param name="index">索引</param>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">索引超出范围</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Set(System.Int32,System.Boolean)">
+            <summary>
+            设置索引为新值
+            </summary>
+            <param name="index">索引</param>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">索引超出范围</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Add(System.Boolean)">
+            <summary>
+            添加一个布尔值
+            </summary>
+            <param name="value">布尔值</param>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Add(System.String)">
+            <summary>
+            向后添加一个元素
+            </summary>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentNullException">参数为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Add(System.Int32)">
+            <summary>
+            向后添加一个元素
+            </summary>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentNullException">参数为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Add(System.Decimal)">
+            <summary>
+            向后添加一个数值
+            </summary>
+            <param name="value">值</param>
+            <exception cref="T:System.ArgumentNullException">参数为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Add``1(``0)">
+            <summary>
+            向后添加一个元素
+            </summary>
+            <typeparam name="T">派生类型</typeparam>
+            <param name="value">元素</param>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Add">
+            <summary>
+            向后添加一个空元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonList.f_set(Cheng.Json.JsonValue,System.Int32)">
+            <summary>
+            <see cref="T:System.ArgumentOutOfRangeException"/>
+            </summary>
+            <param name="value"></param>
+            <param name="index"></param>
+        </member>
+        <member name="P:Cheng.Json.JsonList.Count">
+            <summary>
+            获取集合的元素数
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonList.Capactiy">
+            <summary>
+            获取或设置集合的实际容量
+            </summary>
+            <value>设置的值不得小于<see cref="P:Cheng.Json.JsonList.Count"/></value>
+            <exception cref="T:System.ArgumentOutOfRangeException">值小于<see cref="P:Cheng.Json.JsonList.Count"/></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Add(Cheng.Json.JsonValue)">
+            <summary>
+            向后添加一个元素
+            </summary>
+            <param name="value">元素</param>
+        </member>
+        <member name="M:Cheng.Json.JsonList.RemoveAt(System.Int32)">
+            <summary>
+            删除指定索引的元素
+            </summary>
+            <param name="index">元素</param>
+        </member>
+        <member name="P:Cheng.Json.JsonList.Item(System.Int32)">
+            <summary>
+            获取或设置指定索引的元素
+            </summary>
+            <param name="index">索引</param>
+            <returns>元素</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">索引超出范围</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Insert(System.Int32,Cheng.Json.JsonValue)">
+            <summary>
+            在指定索引插入元素
+            </summary>
+            <param name="index">索引</param>
+            <param name="value">元素</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">索引超出范围</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Insert(System.Int32,System.Decimal)">
+            <summary>
+            在指定索引插入元素
+            </summary>
+            <param name="index">索引</param>
+            <param name="num">元素</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">索引超出范围</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Insert(System.Int32,System.String)">
+            <summary>
+            在指定索引插入元素
+            </summary>
+            <param name="index">索引</param>
+            <param name="str">元素</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">索引超出范围</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Clear">
+            <summary>
+            清空数组元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonList.Remove(Cheng.Json.JsonValue)">
+            <summary>
+            从数组中移除第一个匹配项
+            </summary>
+            <param name="value">匹配的元素</param>
+            <returns>是否移除成功</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonList.GetEnumerator">
+            <summary>
+            返回一个循环访问枚举器
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Cheng.Json.JsonString">
+            <summary>
+            表示Json中的字符串元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonString.#ctor">
+            <summary>
+            实例化一个空字符串Json元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonString.#ctor(System.String)">
+            <summary>
+            使用字符串实例化一个Json字符串元素
+            </summary>
+            <param name="value">元素内容</param>
+            <exception cref="T:System.ArgumentNullException">参数不可为null</exception>
+        </member>
+        <member name="P:Cheng.Json.JsonString.Value">
+            <summary>
+            获取或设置字符串元素
+            </summary>
+            <value>不可设置为null</value>
+            <exception cref="T:System.ArgumentNullException">值设置为null</exception>
+        </member>
+        <member name="M:Cheng.Json.JsonString.Equals(System.Object)">
+            <summary>
+            比较实例的值是否相同
+            </summary>
+            <param name="obj">实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:Cheng.Json.JsonString.ToString">
+            <summary>
+            返回字符串元素
+            </summary>
+            <returns>字符串元素</returns>
+        </member>
+        <member name="T:Cheng.Json.JsonNumber">
+            <summary>
+            表示Json中的数字元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonNumber.#ctor">
+            <summary>
+            初始化一个数字Json元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonNumber.#ctor(System.Decimal)">
+            <summary>
+            初始化一个数字Json元素
+            </summary>
+            <param name="number">初始化值</param>
+        </member>
+        <member name="M:Cheng.Json.JsonNumber.#ctor(System.Int32)">
+            <summary>
+            初始化一个数字Json元素
+            </summary>
+            <param name="number">初始化值</param>
+        </member>
+        <member name="M:Cheng.Json.JsonNumber.#ctor(System.Single)">
+            <summary>
+            初始化一个数字Json元素
+            </summary>
+            <param name="number">初始化值</param>
+        </member>
+        <member name="P:Cheng.Json.JsonNumber.Decimal">
+            <summary>
+            访问或设置其中的值
+            </summary>
+        </member>
+        <member name="P:Cheng.Json.JsonNumber.GetValue">
+            <summary>
+            提取数字对象
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonNumber.Equals(System.Object)">
+            <summary>
+            对比两实例值是否相等
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Cheng.Json.JsonNumber.GetHashCode">
+            <summary>
+            返回此实例的哈希代码
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Cheng.Json.JsonNumber.ToString">
+            <summary>
+            将值以字符串的形式返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Cheng.Json.JsonNumber.op_Implicit(System.Decimal)~Cheng.Json.JsonNumber">
+            <summary>
+            数字隐式转换
+            </summary>
+            <param name="m"></param>
+        </member>
+        <member name="T:Cheng.Json.JsonBoolean">
+            <summary>
+            表示Json中的布尔真值元素
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonBoolean.True">
+            <summary>
+            布尔元素表示真的json格式字符串
+            </summary>
+        </member>
+        <member name="F:Cheng.Json.JsonBoolean.False">
+            <summary>
+            布尔元素表示假的json格式字符串
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonBoolean.#ctor">
+            <summary>
+            实例化布尔类型元素，默认为false
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonBoolean.#ctor(System.Boolean)">
+            <summary>
+            实例化布尔类型元素
+            </summary>
+            <param name="value">布尔值</param>
+        </member>
+        <member name="P:Cheng.Json.JsonBoolean.Value">
+            <summary>
+            获取或设置值
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonBoolean.op_Implicit(System.Boolean)~Cheng.Json.JsonBoolean">
+            <summary>
+            隐式转换
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="T:Cheng.Json.JsonValueNullable">
+            <summary>
+            表示Json中的一个空对象
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonValueNullable.#ctor">
+            <summary>
+            实例化一个空元素
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonValueNullable.GetHashCode">
+            <summary>
+            这是一个空哈希代码
+            </summary>
+            <returns>0</returns>
+        </member>
+        <member name="M:Cheng.Json.JsonValueNullable.Equals(System.Object)">
+            <summary>
+            指示对象是否一致
+            </summary>
+            <param name="obj">对象</param>
+            <returns>若对象是与当前对象相同的实例类型，返回true；若为其它实例返回false；若对象<paramref name="obj"/>是一个null则同样返回true</returns>
+        </member>
+        <member name="T:Cheng.Json.JsonException">
+            <summary>
+            Json引发异常的类
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonException.#ctor">
+            <summary>
+            实例化异常
+            </summary>
+        </member>
+        <member name="M:Cheng.Json.JsonException.#ctor(System.String)">
+            <summary>
+            实例化消息异常
+            </summary>
+            <param name="message">消息</param>
+        </member>
+        <member name="M:Cheng.Json.JsonException.#ctor(System.String,System.Exception)">
+            <summary>
+            实例化异常
+            </summary>
+            <param name="message">消息</param>
+            <param name="exception">导致异常的异常</param>
+        </member>
+    </members>
+</doc>
