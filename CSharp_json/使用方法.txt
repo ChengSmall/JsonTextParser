@@ -1,0 +1,4 @@
+命名空间 namespace: Cheng.Json
+
+使用静态函数JsonValue.JsonToObject(string); 读取Json文本
+或者使用Cheng.Json.JsonValue.StreamToObject(stream);读取流文本
