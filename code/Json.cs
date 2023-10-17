@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Runtime.Serialization;
+using System.Text;
 
 namespace Cheng.Json
 {
@@ -218,6 +217,96 @@ namespace Cheng.Json
             return false;
         }
         /// <summary>
+        /// 转义字符转换
+        /// </summary>
+        /// <param name="transferChars">输入要转义的字符串</param>
+        /// <param name="beginIndex">"\"字符后的起始位索引</param>
+        /// <param name="endIndex">转义字符串后一位索引</param>
+        /// <returns>转移完毕的字符值，若无法识别或不完整字符串则为-1</returns>
+        static int TransferChar(string transferChars, int beginIndex, out int endIndex)
+        {
+            char tc = transferChars[beginIndex];
+          
+            //双引号
+            if (tc == '"')
+            {
+                endIndex = beginIndex + 1;
+                if (endIndex >= transferChars.Length) return -1;
+                return '"';
+            }
+            //单引号
+            if (tc == '\'')
+            {
+                endIndex = beginIndex + 1;
+                if (endIndex >= transferChars.Length) return -1;
+                return '\'';
+            }
+            //斜杠
+            if (tc == '\\')
+            {
+                endIndex = beginIndex + 1;
+                if (endIndex >= transferChars.Length) return -1;
+                return '\\';
+            }
+            //制表
+            if (tc == 't')
+            {
+                endIndex = beginIndex + 1;
+                if (endIndex >= transferChars.Length) return -1;
+                return '\t';
+            }
+            //回车
+            if (tc == 'r')
+            {
+                endIndex = beginIndex + 1;
+                if (endIndex >= transferChars.Length) return -1;
+                return '\r';
+            }
+            //换行
+            if (tc == 'n')
+            {
+                endIndex = beginIndex + 1;
+                if (endIndex >= transferChars.Length) return -1;
+                return '\n';
+            }
+            //退格
+            if (tc == 'b')
+            {
+                endIndex = beginIndex + 1;
+                if (endIndex >= transferChars.Length) return -1;
+                return '\b';
+            }
+            //换页
+            if (tc == 'f')
+            {
+                endIndex = beginIndex + 1;
+                if (endIndex >= transferChars.Length) return -1;
+                return '\f';
+            }
+
+            //字符编码
+            if (tc == 'u')
+            {
+                //字符编码
+                endIndex = beginIndex + 5;
+                if (endIndex >= transferChars.Length) return -1;
+                //获取字符串编码
+                string charu = transferChars.Substring(beginIndex + 1, 4);
+                //转化字符编码
+                try
+                {
+                    return (char)Convert.ToUInt16(charu, 16);
+                }
+                catch (Exception)
+                {
+                    return -1;
+                }
+            }
+            endIndex = beginIndex;
+            return -1;
+        }
+
+        /// <summary>
         /// 检查字符串并返回
         /// </summary>
         /// <param name="beginIndex">检查起始索引</param>
@@ -239,26 +328,57 @@ namespace Cheng.Json
                 return false;
             }
 
-            StringBuilder sb = new StringBuilder(count);
-
             int i = beginIndex + 1;
-            //开始检查字符串
-            while (true)
+            int c;
+            StringBuilder sb;
+            try
             {
+                sb = new StringBuilder(count <= 16 ? count : 16);
 
-                if (text[i] == '"' && text[i-1] != '\\')
+                //开始检查字符串
+                while (true)
                 {
-                    //检查到后引号
-                    endIndex = i + 1;
-                    break;
+                    //转移符号
+                    if (text[i] == '\\')
+                    {
+                        i++;
+                        
+                        //获取转义字符
+                        c = TransferChar(text, i, out i);
+                        //判断转移是否成功
+                        if(c == -1)
+                        {
+                            endIndex = i;
+                            value = null;
+                            return false;
+                        }
+                        //添加
+                        sb.Append((char)c);
+
+                        continue;
+                    }
+
+                    if (text[i] == '"')
+                    {
+                        //检查到后引号
+                        endIndex = i + 1;
+                        break;
+                    }
+
+                    sb.Append(text[i]);
+                    i++;
                 }
 
-                sb.Append(text[i]);
-                i++;
+                value = sb.ToString();
+                return true;
             }
-
-            value = sb.ToString();
-            return true;
+            catch (Exception)
+            {
+                endIndex = i;
+                value = null;
+                return false;
+            }
+            
         }
         /// <summary>
         /// 检查数字并返回
@@ -580,7 +700,6 @@ namespace Cheng.Json
             }
             if(text[i] == '}')
             {
-
                 node = d;
                 endIndex = i + 1;
                 return true;
@@ -811,7 +930,6 @@ namespace Cheng.Json
             return true;
         }
 
-
     }
     #endregion
 
@@ -854,9 +972,9 @@ namespace Cheng.Json
 
     /// <summary>
     /// 表示一个Json中的一个元素
-    /// <para>使用<see cref="JsonValue.JsonToObject(string)"/>将json转化为对象</para>
+    /// <para>使用<see cref="JsonValue.JsonToObject(string)"/>将json文本转化为对象</para>
     /// </summary>
-    public abstract class JsonValue
+    public abstract class JsonValue : IEquatable<JsonValue>
     {
         #region 参数
         /// <summary>
@@ -892,6 +1010,15 @@ namespace Cheng.Json
         /// 获取当前Json元素类型
         /// </summary>
         public JsonValueType JsonType => m_jsonType;
+        /// <summary>
+        /// 当前元素层级
+        /// </summary>
+        /// <returns>
+        /// 一个表示层级的整数，表示该元素所在<see cref="JsonObject"/>对象列表的嵌套层数，根节点为0，每添加一级节点依次向后增加；
+        /// <para>例：实例化一个<see cref="JsonObject"/>对象，该层级默认为0，若为该对象添加一个元素，添加的元素层级为当前对象层级+1；若将一个对象<see cref="JsonValue"/>添加到其它<see cref="JsonObject"/>，该对象层级是添加的对象层级+1，存在<see cref="JsonObject"/>的子对象也会随之变动</para>
+        /// </returns>
+        public int Level => m_level;
+
         #region 元素获取
         /// <summary>
         /// 提取元素到字符串
@@ -992,7 +1119,7 @@ namespace Cheng.Json
         /// <summary>
         /// 调整元素层级
         /// </summary>
-        /// <param name="lvl">元素父层级</param>
+        /// <param name="lvl">对象父层级</param>
         internal virtual void f_setLevel(int lvl)
         {
             var d = JsonType;
@@ -1065,9 +1192,9 @@ namespace Cheng.Json
         }
 
         /// <summary>
-        /// 使用Json格式文本返回此实例内容
+        /// 将此实例内容使用Json格式文本转化
         /// </summary>
-        /// <returns>Json格式文本</returns>
+        /// <returns>转化的Json格式文本</returns>
         public string ToJsonText()
         {
             return f_toJsonText();
@@ -1257,16 +1384,17 @@ namespace Cheng.Json
         }
 
         /// <summary>
-        /// 将指定流文本转化为json对象
+        /// 将指定文本转化为json对象
         /// </summary>
-        /// <param name="streamReader">读取的流文本</param>
+        /// <param name="streamReader">文本读取器</param>
         /// <returns>使用<paramref name="streamReader"/>读取文本转化的对象</returns>
         /// <exception cref="ArgumentNullException">参数为null</exception>
         /// <exception cref="JsonException">json文本格式错误，无法正常读取</exception>
         /// <exception cref="System.IO.IOException">IO错误</exception>
         /// <exception cref="OutOfMemoryException">没有足够的内存读取字符串文本</exception>
         /// <exception cref="System.StackOverflowException">文本嵌套次数过多导致在递归读取时堆栈溢出</exception>
-        public static JsonValue StreamToObject(StreamReader streamReader)
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static JsonValue JsonToObject(TextReader streamReader)
         {
             if (streamReader is null)
             {
@@ -1277,10 +1405,11 @@ namespace Cheng.Json
 
             return JsonToObject(json);
         }
+
         /// <summary>
         /// 指定路径文件中的json文本转化为对象
         /// </summary>
-        /// <param name="path">读取的文件路径</param>
+        /// <param name="path">要读取的文件路径</param>
         /// <returns>路径文件的json文本转化的对象</returns>
         /// <exception cref="ArgumentNullException">参数为null</exception>
         /// <exception cref="JsonException">json文本格式错误，无法正常读取</exception>
@@ -1300,11 +1429,94 @@ namespace Cheng.Json
         }
         #endregion
 
+        #region 派生
+        public override bool Equals(object obj)
+        {
+            if (obj == (object)this) return true;
+            if (obj is null) return false;
+
+            if(obj is JsonValue value)
+            {
+                return Equals(value);
+            }
+            return false;
+        }
+        public override int GetHashCode()
+        {
+            var type = JsonType;
+            switch (type)
+            {
+                case JsonValueType.Null:
+                    return 0;
+                case JsonValueType.String:
+                    return GetValueString.GetHashCode();
+                case JsonValueType.Number:
+                    return GetValueNumber.GetHashCode();
+                case JsonValueType.Boolean:
+                    return GetValueBoolean.GetHashCode();
+                default:
+                    return base.GetHashCode();
+            }
+        }
+        /// <summary>
+        /// 比较是否相等
+        /// </summary>
+        /// <param name="value">比较对象</param>
+        /// <returns>若比较对象不是该实例类型，则返回false；若比较对象同该实例类型，则比较实例内部的值，如果是对象或集合则为false；若比较对象是空对象，则只有该对象为空时返回true；注意：当比较对象为null引用时会直接返回false，不会因为该实例为空对象而改变</returns>
+        public virtual bool Equals(JsonValue value)
+        {
+            if (value is null) return false;
+            if ((object)this == (object)value) return true;
+            var type = value.JsonType;
+            if (type != JsonType) return false;
+
+            switch (type)
+            {
+                case JsonValueType.Null:
+                    return true;
+                case JsonValueType.String:
+                    return GetValueString == value.GetValueString;
+                case JsonValueType.Number:
+                    return GetValueNumber == value.GetValueNumber;
+                case JsonValueType.Boolean:
+                    return GetValueBoolean == value.GetValueBoolean;
+                default:
+                    return false;
+            }
+        }
+        /// <summary>
+        /// 比较两实例的值是否相等
+        /// </summary>
+        /// <param name="j1"></param>
+        /// <param name="j2"></param>
+        /// <returns></returns>
+        public static bool operator ==(JsonValue j1, JsonValue j2)
+        {
+            if ((object)j1 == (object)j2) return true;
+            if (j1 is null || j2 is null) return false;
+
+            return j1.Equals(j2);
+        }
+        /// <summary>
+        /// 比较两实例的值是否不相等
+        /// </summary>
+        /// <param name="j1"></param>
+        /// <param name="j2"></param>
+        /// <returns></returns>
+        public static bool operator !=(JsonValue j1, JsonValue j2)
+        {
+            if ((object)j1 == (object)j2) return true;
+            if (j1 is null || j2 is null) return false;
+
+            return !j1.Equals(j2);
+        }
+        #endregion
+
         #endregion
     }
 
     /// <summary>
-    /// 表示Json中使用花括号"{}"囊括键值对的对象元素；同时也可以当作一个Json文本的根节点
+    /// 表示Json中使用花括号"{}"囊括键值对的对象元素
     /// </summary>
     public sealed class JsonObject : JsonValue, IDictionary<string, JsonValue>
     {
@@ -1392,35 +1604,35 @@ namespace Cheng.Json
         }
         private void f_add(string key, JsonValue value)
         {
-            if (value is null) value = new JsonValueNullable();
+            if (value is null) value = JsonValueNullable.NullValue;
             m_dictionary.Add(key, value);
             value.f_setLevel(m_level);
             value.m_parantNode = this;
         }
         private void f_set(string key, JsonValue value)
         {
-            if (value is null) value = new JsonValueNullable();
+            m_dictionary[key] = value;
             value.f_setLevel(m_level);
             value.m_parantNode = this;
-            m_dictionary[key] = value;
         }
         /// <summary>
         /// 获取或设置与指定键的值
         /// </summary>
         /// <param name="key">键</param>
-        /// <returns>指定键的值，若未找到则返回一个null</returns>
-        /// <exception cref="ArgumentNullException">键为null</exception>
+        /// <returns>指定键的值</returns>
+        /// <exception cref="ArgumentNullException">键为null或值为null</exception>
+        /// <exception cref="KeyNotFoundException">没有找到指定键</exception>
         public JsonValue this[string key]
         {
             get
             {
-                if(!m_dictionary.TryGetValue(key, out var value))
-                {
-                    return null;
-                }
-                return value;
+                return m_dictionary[key];
             }
-            set => f_set(key, value);
+            set
+            {
+                if (value is null) throw new ArgumentNullException("value");
+                f_set(key, value);
+            }
         }
         /// <summary>
         /// 获取指定值
@@ -1488,7 +1700,7 @@ namespace Cheng.Json
         /// <exception cref="ArgumentNullException">key为null</exception>
         public void Add(string key)
         {
-            f_add(key, new JsonValueNullable());
+            f_add(key, JsonValueNullable.NullValue);
         }
         /// <summary>
         /// 给指定的键设置一个空值
@@ -1496,15 +1708,58 @@ namespace Cheng.Json
         /// <param name="key">key为null</param>
         public void Set(string key)
         {
-            f_set(key, new JsonValueNullable());
+            f_set(key, JsonValueNullable.NullValue);
         }
+        /// <summary>
+        /// 设置指定键的值
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        /// <exception cref="ArgumentNullException">元素为null</exception>
+        public void Set(string key, JsonValue value)
+        {
+            if (value is null) throw new ArgumentNullException("value");
+            f_set(key, value);
+        }
+        /// <summary>
+        /// 设置指定键的值
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="num">值</param>
+        /// <exception cref="ArgumentNullException">键为null</exception>
+        public void Set(string key, decimal num)
+        {
+            f_set(key, new JsonNumber(num));
+        }
+        /// <summary>
+        /// 设置指定键的值
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="str">值，若该值为null则做空值</param>
+        /// <exception cref="ArgumentNullException">键为null</exception>
+        public void Set(string key, string str)
+        {
+            if(str is null)
+            {
+                f_set(key, JsonValueNullable.NullValue);
+                return;
+            }
+            f_set(key, new JsonString(str));
+        }
+        /// <summary>
+        /// 获取指定键的值
+        /// </summary>
+        /// <param name="key">键</param>
+        /// <param name="value">获取的值</param>
+        /// <returns>是否成功获取；成功获取true；指定键不存在则false</returns>
+        /// <exception cref="ArgumentNullException">键为null</exception>
         public bool TryGetValue(string key, out JsonValue value)
         {
             return m_dictionary.TryGetValue(key, out value);
         }
-
         void ICollection<KeyValuePair<string, JsonValue>>.Add(KeyValuePair<string, JsonValue> item)
         {
+            if (item.Value is null) throw new ArgumentNullException("item.Value");
             f_add(item.Key, item.Value);
         }
         /// <summary>
@@ -1528,12 +1783,18 @@ namespace Cheng.Json
         {
             return m_dictionary.Remove(item.Key);
         }
-
-        public IEnumerator<KeyValuePair<string, JsonValue>> GetEnumerator()
+        /// <summary>
+        /// 获取一个循环访问的枚举器
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, JsonValue>.Enumerator GetEnumerator()
         {
             return m_dictionary.GetEnumerator();
         }
-
+        IEnumerator<KeyValuePair<string, JsonValue>> IEnumerable<KeyValuePair<string, JsonValue>>.GetEnumerator()
+        {
+            return m_dictionary.GetEnumerator();
+        }
         IEnumerator IEnumerable.GetEnumerator()
         {
             return m_dictionary.GetEnumerator();
@@ -1619,6 +1880,10 @@ namespace Cheng.Json
             return sb.ToString();
 
         }
+        public override bool Equals(JsonValue value)
+        {
+            return (object)this == (object)value;
+        }
         #endregion
 
         #region 节点功能
@@ -1630,6 +1895,7 @@ namespace Cheng.Json
         {
             return f_toJsonText();
         }
+
         #endregion
 
     }
@@ -1961,7 +2227,7 @@ namespace Cheng.Json
     /// <summary>
     /// 表示Json中的字符串元素
     /// </summary>
-    public sealed class JsonString : JsonValue
+    public sealed class JsonString : JsonValue, IEquatable<JsonString>
     {
         private string m_value;
         /// <summary>
@@ -2002,8 +2268,7 @@ namespace Cheng.Json
             }
         }
 
-        #region 派生
-        
+        #region 派生      
         protected override void f_initJsonParameter()
         {
             base.f_initJsonParameter();
@@ -2047,14 +2312,31 @@ namespace Cheng.Json
         {
             return m_value;
         }
-
+        /// <summary>
+        /// 比较实例的值是否相同
+        /// </summary>
+        /// <param name="other">实例</param>
+        /// <returns></returns>
+        public bool Equals(JsonString other)
+        {
+            if (other is null) return false;
+            return m_value == other.m_value;
+        }
+        public static bool operator ==(JsonString j1, JsonString j2)
+        {
+            return j1?.m_value == j2?.m_value;
+        }
+        public static bool operator !=(JsonString j1, JsonString j2)
+        {
+            return j1?.m_value != j2?.m_value;
+        }
         #endregion
 
     }
     /// <summary>
     /// 表示Json中的数字元素
     /// </summary>
-    public sealed class JsonNumber : JsonValue
+    public sealed class JsonNumber : JsonValue, IEquatable<JsonNumber>, IComparable<JsonNumber>
     {
         #region 参数
         private decimal m_number;
@@ -2148,6 +2430,33 @@ namespace Cheng.Json
         {
             return m_number.ToString();
         }
+        /// <summary>
+        /// 对比两实例值是否相等
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(JsonNumber other)
+        {
+            if (other is null) return false;
+            return m_number == other.m_number;
+        }
+        public int CompareTo(JsonNumber other)
+        {
+            if (other is null) return m_number.CompareTo(decimal.Zero);
+            return m_number.CompareTo(other.m_number);
+        }
+        public static bool operator ==(JsonNumber j1, JsonNumber j2)
+        {
+            if ((object)j1 == (object)j2) return true;
+            if (j1 is null || j2 is null) return false;
+            return (j1.m_number) == (j2.m_number);
+        }
+        public static bool operator !=(JsonNumber j1, JsonNumber j2)
+        {
+            if ((object)j1 == (object)j2) return false;
+            if (j1 is null || j2 is null) return true;
+            return (j1.m_number) != (j2.m_number);
+        }
         #endregion
         /// <summary>
         /// 数字隐式转换
@@ -2162,7 +2471,7 @@ namespace Cheng.Json
     /// <summary>
     /// 表示Json中的布尔真值元素
     /// </summary>
-    public sealed class JsonBoolean : JsonValue
+    public sealed class JsonBoolean : JsonValue, IEquatable<JsonBoolean>, IComparable<JsonBoolean>
     {
         /// <summary>
         /// 布尔元素表示真的json格式字符串
@@ -2231,7 +2540,17 @@ namespace Cheng.Json
         {
             return m_value.GetHashCode();
         }
+        public bool Equals(JsonBoolean other)
+        {
+            if (other is null) return false;
+            return m_value == other.m_value;
+        }
 
+        public int CompareTo(JsonBoolean other)
+        {
+            if (other is null) return m_value.CompareTo(false);
+            return m_value.CompareTo(other.m_value);
+        }
         /// <summary>
         /// 隐式转换
         /// </summary>
@@ -2240,22 +2559,40 @@ namespace Cheng.Json
         {
             return new JsonBoolean(value);
         }
+
+        public static bool operator ==(JsonBoolean j1, JsonBoolean j2)
+        {
+            if ((object)j1 == (object)j2) return true;
+            if (j1 is null || j2 is null) return false;
+            return (j1.m_value) == (j2.m_value);
+        }
+        public static bool operator !=(JsonBoolean j1, JsonBoolean j2)
+        {
+            if ((object)j1 == (object)j2) return false;
+            if (j1 is null || j2 is null) return true;
+            return (j1.m_value) != (j2.m_value);
+        }
     }
     /// <summary>
     /// 表示Json中的一个空对象
     /// </summary>
     public sealed class JsonValueNullable : JsonValue
     {
+        /// <summary>
+        /// 表示一个空对象
+        /// </summary>
+        public readonly static JsonValueNullable NullValue = new JsonValueNullable();
+
         internal const string NullableText = "null";
         /// <summary>
-        /// 实例化一个空元素
+        /// 实例化一个新的空元素对象
         /// </summary>
         public JsonValueNullable()
         {          
         }
         internal override void f_setLevel(int lvl)
         {
-            m_level = lvl + 1;         
+            m_level = lvl + 1;
         }
         internal override string f_toJsonText()
         {
@@ -2273,7 +2610,7 @@ namespace Cheng.Json
             return NullableText;
         }
         /// <summary>
-        /// 这是一个空哈希代码
+        /// 这是一个空哈希值
         /// </summary>
         /// <returns>0</returns>
         public override int GetHashCode()
@@ -2288,6 +2625,13 @@ namespace Cheng.Json
         public override bool Equals(object obj)
         {
             return (obj == null) ? true : (obj is JsonValueNullable ? true : false);
+        }
+
+        public override bool Equals(JsonValue value)
+        {
+            if (value is null) return false;
+            if (value.JsonType == JsonValueType.Null) return true;
+            return false;
         }
     }
 
